@@ -5,4 +5,4 @@ Code and data for the manuscript "Power spectrum of resting-state blood-oxygen-l
 
 If you use our code in your research, please cite us as follows:
 
-J.C. Pang, P.A. Robinson, Power spectrum of resting-state blood-oxygen-level-dependent signal, Physical Review E, 100(2):002418, 2019.
+J.C. Pang, P.A. Robinson, Power spectrum of resting-state blood-oxygen-level-dependent signal, Physical Review E, 100(2):002418, 2019. http://dx.doi.org/10.1103/PhysRevE.100.022418
