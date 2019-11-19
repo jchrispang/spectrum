@@ -454,8 +454,6 @@ text(0.09, 0.53, '$s \approx 1.8$', 'fontsize', 15, 'fontweight', 'b', ...
     'color', 'k', 'interpreter', 'latex')
 
 f = h.f;
-save('data/data_artificial_rng=1.mat', 'f', 'mean_spectra')
-clear f
 
 % inset
 h.ax = axes('Parent', h.fig, 'Position', [0.2 0.2 0.35 0.35]);
