@@ -3,21 +3,16 @@ function [limits, limits_str] = get_params_limits_new()
 %
 % Gets physiological limits of some parameters of the hemodynamic model.
 %
-% James Pang, University of Sydney, 2018
+% Outputs: limits     : structure of parameter limits
+%          limits_str : cell of parameter names
+%
+% Original: James Pang, University of Sydney, 2018
+% Version 1.2: James Pang, QIMR Berghofer Medical Research Institute, 2019
 
-%%
-% limits.D = [106, 850];     % effective blood viscosity [kg m^(-3) s^(-1)]
-
-% limits.rho_f = [1054, 1065]; % blood mass density [kg m^(-3)]
-%                              % Trudnowski and Rico (Clin Chem, 1974)
+%% main code
 
 limits.tau = [1, 4];       % hemodynamic transit time [s]
                            % Buxton et al. (NeuroImage, 2004)
-                           
-% limits.alpha = [0.28, 0.56]; % Grubb's exponent [unitless]
-%                              % Boas and Payne (Phys. Meas., 2009)
-%                              % From Fung (Biomechanics..., 1993), beta =
-%                              % [1,5], which translates to alpha = [0.2, 1] 
                              
 limits.beta = [1/0.56, 1/0.28]; % mean elasticity exponent of cortical vessels [unitless]
              
@@ -36,12 +31,7 @@ limits.v_b = [1, 12]*1e-3; % wave sped [m/s]
                       
 limits.Gamma = [0.1, 1];   % wave damping rate [s^(-1)]
                            % Aquino et al. (PLoS CB, 2012), Aquino et al. (JTB 2014)
-                           
-% limits.tau_d = [0.2, 2.4]; % astrocytic delay [s]
-%                            % Pang et al. (NeuroImage, 2017]
-                           
-% limits.Znorm = [0, 0.9999]; % limits for acos()
-                           
+                                                      
 if nargout > 1
     limits_str = {'tau', 'beta', 'kappa', 'w_f', 'L', 'v_b', 'Gamma'};
 end

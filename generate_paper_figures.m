@@ -1,6 +1,12 @@
-function paper_figures_postacceptance2
+function generate_paper_figures
 issave = 1;
-folder_name = 'Manuscript/figures_postacceptance2';
+folder_name = 'figures';
+
+if issave
+    if ~exist(folder_name, 'dir')
+        mkdir(folder_name)
+    end
+end
 
 figure1(issave,folder_name,'Figure1')
 figure4(issave,folder_name,'Figure4')
@@ -26,20 +32,13 @@ x = data_He.mean_x;
 
 fig = figure('Position', [200, 200, 750, 350]);
 axes('Position', [0.1 0.15 0.38 0.75])
-loglog(NaN, NaN)%, 'HandleVisibility', 'off')
+loglog(NaN, NaN)
 hold on;
-% loglog(x, data_He.mean_y, 'k-o', 'linewidth', 2)
-% fill([x fliplr(x)], [data_He.mean_y+data_He.std_y fliplr(data_He.mean_y-data_He.std_y)], ...
-%       [.75 .75 .75], 'linestyle', 'none')
-% h = errorbar(x, data_He.mean_y, data_He.std_y, 'ko-', 'linewidth', 2);
-% set(gca, 'yscale', 'log')
 for i=1:regions_cortical
     y = data_He.y(i,:);
     loglog(x, y, '.-', 'linewidth', 1)
 end
 hold off;
-% leg = legend(data_He.region_names);
-% leg = legend('mean', 'one std');
 
 text(0.06, 8, '$s \approx 0.5$ to $1.2$', 'fontsize', 15, 'fontweight', 'b', ...
     'color', 'k', 'interpreter', 'latex')
@@ -55,15 +54,10 @@ set(gca, 'Xlim', [0.01, 0.2], ...
          'Ylim', [0.8, 20], ...
          'fontsize', 15, ...
          'ticklength', [0.02, 0.02]);
-% set(leg, 'fontSize', 15, 'location', 'southwest');
 xlabel('$f$ (Hz)', 'fontsize', 15, 'interpreter', 'latex')
 ylabel('$P(f)$ (arbitrary units)', 'fontsize', 15, 'interpreter', 'latex')
-% h = get(gca,'Children');
-% set(gca,'Children',[h(end); h(1:end-2);  h(end-1)]);
 
 % Boynton et al. (1996), Bandettini (1999), and Chen and Tyler (2008)
-% fit data
-% Chen_Bandettini -2.875 +- -0.0620, Chen_Boynton -1.197 +- -0.0280
 axes('Position', [0.58 0.15 0.38 0.75])
 loglog(NaN, NaN, 'HandleVisibility', 'off')
 hold on;
@@ -102,7 +96,7 @@ function figure4(issave,folder_name,file_name)
 % Figure 4: Spatiotemporal and temporal profile of BOLD for nominal
 % parameters
 
-h.p = utils.loadParameters;
+h.p = utils.loadParameters_new;
 h = calc_BOLD(h);
 h.BOLD_center = h.BOLD(h.center, :);
 clim = [min(h.BOLD), max(h.BOLD)];
@@ -116,10 +110,6 @@ plot([0 0], [h.t(1) h.t(end)], 'k--', 'linewidth', 1.5)
 hold off;
 set(h.ax.Colorbar.Label, 'String', 'Spatiotemporal response, $Y(x,t)$', ...
     'fontsize', 15, 'interpreter', 'latex');
-
-% cb = cbrewer('div', 'R', 41, 'pchip');
-% colormap(flipud(cb));
-
 
 h.ax = axes('Parent', h.fig, 'Position', [0.69 0.19 0.29 0.75]);
 prepare_figBOLDtemporal(h)
@@ -144,13 +134,12 @@ h.f = linspace(h.fmin, h.fmax, 1000);
 [~, h.normSpectra] = utils.calc_nominal_spectra(h.f);
 linecolors = [0 0 0; 215 48 31; 252 141 89; 253 204 138; 254 240 217]/255;
 linetypes = {'-.', '-', '-', '-', '-'};
-linewidths = 2.5*ones(1,5);%[2.5, 1.5, 1.5, 1.5, 1.5];
+linewidths = 2.5*ones(1,5);
 
 what_spectras = {'PBOLD', 'P0', 'P1', 'P2', 'P3'};
 h.fig = figure;
 h.ax = axes('Parent', h.fig);
 hsetup = loglog(h.ax, NaN, NaN, 'HandleVisibility', 'off');
-% set(get(get(hsetup,'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 hold on;
 for j = 1:length(what_spectras)
     normalized_spectra = h.normSpectra.(what_spectras{j});
@@ -183,7 +172,7 @@ end
 function figure6(issave,folder_name,file_name)
 % Figure 6: Autocorrelation
 
-h.p = utils.loadParameters;
+h.p = utils.loadParameters_new;
 
 d_max = 2e-3;
 t_max = 120;
@@ -215,7 +204,7 @@ t = h.t(h.center:end);
 fo = fitoptions('Method', 'NonlinearLeastSquares');
 ft = fittype('a*exp(-x/b)+c', 'options', fo);
 
-[curve, gof] = fit(t', norm_autocorr', ft)
+[curve, gof] = fit(t', norm_autocorr', ft);
 
 h.fig = figure;
 h.ax = axes('Parent', h.fig);
@@ -245,9 +234,8 @@ h.fmax = 0.2;
 h.f = linspace(h.fmin, h.fmax, 1000);
 h.number_points = 3;
 h.linecolors = [0 0 0; 0 0 1; 1 0 0];
-% h.colors = [222 235 247; 252 146 114; 0 0 0]/255;
 h.linetypes = {'-', '--', '-.'};
-h.linewidths = 1.5*ones(1,3); %[2, 2, 2];
+h.linewidths = 1.5*ones(1,3);
 h.titles = {'$P_{\rm BOLD}(f)$', '$P_0(f)$', '$P_1(f)$', '$P_2(f)$', '$P_3(f)$'};
 params_str = {'tau', 'kappa', 'w_f'};
 params_names = {'$\tau$', '$\kappa$', '$\omega_f$'};
@@ -293,9 +281,6 @@ for i = 1:length(params_str)
         if prod(varying_param_normSpectra{1}.(what_spectra)./varying_param_normSpectra{2}.(what_spectra))==1
             chH = get(gca,'Children');
             set(gca,'Children',[chH(2); chH(1); chH(end)])
-%             annotation('rectangle', 'facealpha', 0.8, ...
-%                        'position', [init_x+(j-1)*spacing_x+(j==1)*(-0.04)-0.003 init_y-(i-1)*spacing_y-0.003 width+0.006 height+0.006], ...
-%                        'edgecolor', 'none', 'facecolor', 'w');
         end
         if i==length(params_str) && j==1
             annotation('rectangle', ...
@@ -315,7 +300,6 @@ function figure8(issave,folder_name,file_name)
 % Figure 8: Spectra using fitted parameters 
 
 load data/data.mat
-load data/fitted_parameters.mat
 
 h.fmin = 0.003;
 h.fmax = 0.2;
@@ -327,15 +311,10 @@ width = 0.26; height = 0.75;
 h.fig = figure('Position', [200, 200, 1000, 350]);
 
 % tuned parameters for He et al. (2010) data
-% experiment: -0.8699 +- 0.0323
-% model: -2.855 +- 0.009
 params = utils.loadParameters_new;
-% params.tau = fit_values.('He')(1);
-% params.kappa = fit_values.('He')(2);
-% params.w_f = fit_values.('He')(3);
-params.tau = 1.1;%1.2784;
-params.kappa = 0.8;%0.2062;
-params.w_f = 0.19;%0.1115;
+params.tau = 1.1;
+params.kappa = 0.8;
+params.w_f = 0.19;
 
 [~, normSpectra] = utils.calc_spectra(h.f, params);
 h.linewidth = 2;
@@ -349,7 +328,6 @@ errorbar(h.ax, data_He.mean_x, data_He.mean_y_cortical/max(data_He.mean_y_cortic
          data_He.std_y_cortical/max(data_He.mean_y_cortical), 'bs', ...
          'markersize', 8);
 hold off;
-% set(h.ax, 'ylim', get(h.ax, 'ylim').*[1, 1.1]);
 set(h.ax, 'ylim', [0.06, 1.3]);
 leg = legend(h.ax, 'model', 'He et al. [16]');
 
@@ -363,15 +341,10 @@ text(0.027, 0.35, '$s \approx 0.9$', 'fontsize', 15, 'fontweight', 'b', ...
 % title('averaged data', 'fontsize', 15) 
 
 % tuned parameters for Boynton et al. (1996) data
-% experiment: -1.197 +- 0.0280
-% model: -2.955 +- 0.019
 params = utils.loadParameters_new;
-% params.tau = fit_values.('Chen_Boynton')(1);
-% params.kappa = fit_values.('Chen_Boynton')(2);
-% params.w_f = fit_values.('Chen_Boynton')(3);
-params.tau = 1.8;%1.2784;
-params.kappa = 1;%0.2062;
-params.w_f = 0.36;%0.1115;
+params.tau = 1.8;
+params.kappa = 1;
+params.w_f = 0.36;
 
 [~, normSpectra] = utils.calc_spectra(h.f, params);
 h.linewidth = 2;
@@ -386,7 +359,6 @@ loglog(h.ax, data_Chen_Boynton.x, data_Chen_Boynton.y/max(data_Chen_Boynton.y), 
 hold off;
 leg = legend(h.ax, 'model', 'Boynton et al. [22]', 'Chen and Tyler [24]');
 
-% set(h.ax, 'ylim', get(h.ax, 'ylim').*[1, 1.1]);
 set(h.ax, 'ylim', [0.06, 1.3]);
 xlabel(h.ax, '$f$ (Hz)', 'fontsize', 15, 'interpreter', 'latex')
 set(leg, 'fontSize', 15, 'location', 'southwest', 'box', 'off');
@@ -397,15 +369,10 @@ text(0.07, 0.75, '$s \approx 1.2$', 'fontsize', 15, 'fontweight', 'b', ...
 % title('averaged data', 'fontsize', 15) 
 
 % tuned parameters for Bandettini (1999) data
-% experiment: -2.875 +- 0.062
-% model: -3.11 +- 0.018
 params = utils.loadParameters_new;
-% params.tau = fit_values.('Chen_Bandettini')(1);
-% params.kappa = fit_values.('Chen_Bandettini')(2);
-% params.w_f = fit_values.('Chen_Bandettini')(3);
-params.tau = 1.415;%1.2784;
-params.kappa = 0.8;%0.2062;
-params.w_f = 0.39;%0.1115;
+params.tau = 1.415;
+params.kappa = 0.8;
+params.w_f = 0.39;
 
 [~, normSpectra] = utils.calc_spectra(h.f, params);
 h.linewidth = 2;
@@ -420,7 +387,6 @@ loglog(h.ax, data_Chen_Bandettini.x, data_Chen_Bandettini.y/max(data_Chen_Bandet
 hold off;
 leg = legend(h.ax, 'model', 'Bandettini [23]', 'Chen and Tyler [24]');
 
-% set(h.ax, 'ylim', get(h.ax, 'ylim').*[1, 1.1]);
 set(h.ax, 'ylim', [0.06, 1.3]);
 xlabel(h.ax, '$f$ (Hz)', 'fontsize', 15, 'interpreter', 'latex')
 set(leg, 'fontSize', 15, 'location', 'southwest', 'box', 'off');
@@ -444,7 +410,7 @@ end
 
 function figure9(issave,folder_name,file_name)
 % Figure 9: Creating artificial power laws
-% (1) Averaging of multiple voxels, subjects and hemisphere
+% Averaging of multiple voxels, subjects and hemisphere
 
 h.fig = figure;
 
@@ -458,11 +424,7 @@ what_spectra = 'PBOLD';
 param_str = 'w_f'; 
 
 h.number_points = 40;
-% param_values = linspace(limits.(param_str)(1), params3.(param_str), h3.number_points);
-% rng(1)  % -2.6802  -2.344 +- 0.013
-% rng(1000000) % slope - 2.787  -2.248 +- 0.006
-% rng(100)
-rng(500000)  % slope  -1.762 +- 0.014
+rng(500000)
 param_values = limits.(param_str)(1) + ...
                (params.(param_str) - limits.(param_str)(1))*rand(1, h.number_points);
 
@@ -488,8 +450,6 @@ mean_spectra = mean(all_spectra)/trapz(2*pi*h.f, mean(all_spectra));
 prepare_figspectrum(h, mean_spectra);
 xlabel(h.ax, '$f$ (Hz)', 'fontsize', 15, 'interpreter', 'latex')
 ylabel(h.ax, '$P(f)$ (arbitrary units)', 'fontsize', 15, 'interpreter', 'latex')
-% text(0.075, 0.53, '$s \approx 2.2$', 'fontsize', 15, 'fontweight', 'b', ...
-%     'color', 'k', 'interpreter', 'latex')
 text(0.09, 0.53, '$s \approx 1.8$', 'fontsize', 15, 'fontweight', 'b', ...
     'color', 'k', 'interpreter', 'latex')
 
@@ -524,9 +484,6 @@ function figure10(issave,folder_name,file_name)
 % Figure 10: Spectra using different noise
 
 params = utils.loadParameters_new;
-% params.tau = 1.4;
-% param.kappa = 0.8;
-% param.w_f = 0.4;
 
 noise_types = {'white', 'pink', 'brown', 'blue'};
 
@@ -539,21 +496,7 @@ h.fmin = 0.01;
 h.fmax = 1;
 h.linewidth = 2;
 h.linetypes = {'-', '--', '-.', ':'};
-% h.linecolors = {'k', 'm', 'r', 'b'};
 h.linecolors = [0 0 0; 1 0 1; 1 0 0; 0 0 1];
-% h.linecolors = [0, 0, 0;
-%           1, 0.07, 0.65;
-%           0.64, 0.16, 0.16;
-%           0, 0, 1];
-% cb = cbrewer('seq', 'OrRd', 10, 'pchip');
-% h.linecolors = flipud(cb);
-% h.linecolors = [0 0 0; 252 141 89; 253 204 138; 254 240 217]/255;
-
-% out = utils.calc_spectra_noise(params, 'pink');
-% f = out.w/(2*pi);
-% fstart_ind = dsearchn(f', h.fmin);
-% fend_ind = dsearchn(f', h.fmax);
-% h.f = f(fstart_ind:fend_ind);
     
 for noise_ind = 1:length(noise_types)
     out = utils.calc_spectra_noise(params, noise_types{noise_ind});
@@ -561,8 +504,6 @@ for noise_ind = 1:length(noise_types)
     fstart_ind = dsearchn(f', h.fmin);
     fend_ind = dsearchn(f', h.fmax);
     h.f = f(fstart_ind:fend_ind);
-%     normSpectra(noise_ind,:) = out.normSpectra;
-%     noise_normSpectra(noise_ind,:) = out.noise_normSpectra; 
     normSpectra(noise_ind,:) = out.spectra(fstart_ind:fend_ind)/trapz(h.f, out.spectra(fstart_ind:fend_ind));
     noise_normSpectra(noise_ind,:) = out.noise_spectra(fstart_ind:fend_ind)/trapz(h.f, out.noise_spectra(fstart_ind:fend_ind)); 
 end
@@ -640,13 +581,7 @@ set(h.ax, 'Xlim', [h.fmin, h.fmax], ...
          'Xticklabel', {0.00001, 0.0001, 0.001, 0.003, 0.01, 0.05, 0.1, 0.2, 1, 10, 100}, ...
          'Ylim', [min(normSpectra)*0.8, max(normSpectra)*1.2], ...
          'fontsize', 15, ...
-         'ticklength', [0.02, 0.02]); 
-% xlabel(h.ax, 'Frequency (Hz)', 'fontsize', 15);
-% if strcmpi(what_spectra, 'total')
-%     ylabel(h.ax, 'BOLD power', 'fontsize', 15);
-% else
-%     ylabel(h.ax, [what_spectra, '(f)'], 'fontsize', 15)
-% end
+         'ticklength', [0.02, 0.02]);
 
 function prepare_figVaryingSpectra(h, varying_param_normSpectra, what_spectra)
 
@@ -663,7 +598,6 @@ for j = 1:h.number_points
            'color', h.linecolors(j,:));
 end
 hold off;
-% leg = legend(h.ax, 'nominal', 'min', 'mid', 'max');
 
 set(h.ax, 'Xlim', [h.fmin, h.fmax], ...
          'Xtick', [1e-5, 1e-4, 1e-3, 0.003, 1e-2, 0.05, 1e-1, 1, 5, 10, 100], ...
@@ -671,11 +605,6 @@ set(h.ax, 'Xlim', [h.fmin, h.fmax], ...
          'Ylim', [min(ylims(:,1))*0.8, max(ylims(:,2))*1.2], ....
          'fontsize', 15, ...
          'ticklength', [0.02, 0.02]);
-% set(leg, 'fontSize', 15, 'location', 'southWest');
-
-% xlabel(h.ax, '$f$ (Hz)', 'fontsize', 15, 'interpreter', 'latex')
-% ylabel(h.ax, 'normalized power spectral densities', 'fontsize', 15)
-
 
 function prepare_figBOLDspatiotemporal(h)
 
@@ -692,7 +621,6 @@ set(h.ax, 'fontsize', 15, 'Xtick', [-20, -15, -10, -5, -2.5, 0, 2.5, 5, 10, 15, 
     'Yticklabel', {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50}, ...
     'XLim', [min(h.x), max(h.x)*1.01]*1e3, 'YLim', [0, max(h.t)*1.01], ...
     'CLim', h.clims, 'Ydir', 'normal', 'ticklength', [0.02, 0.02])
-% title(h.ax, 'stHRF', 'fontsize', 15);
 
 function prepare_figBOLDtemporal(h)
 
@@ -703,8 +631,6 @@ set(h.ax, 'Xtick', [0, 10, 20, 30, 40, 50], ...
     'XLim', [0, max(h.t)*1.01], 'YLim', [min(h.BOLD_center)-0.02, max(h.BOLD_center)*1.2], ...
     'fontsize', 15, 'ticklength', [0.02, 0.02]); 
 xlabel(h.ax, '$t$ (s)', 'fontsize', 15, 'interpreter', 'latex');
-% title(h.ax, 'tHRF', 'fontsize', 15);
-
 
 function h = calc_BOLD(h)
 % calculate BOLD signal

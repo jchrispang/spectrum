@@ -1,5 +1,25 @@
 function [spectra, normSpectra] = calc_spectra(f, params)
-% calculate different spectra
+%% calc_spectra.m
+%
+% Calculates different components of BOLD power spectra 
+%
+% Inputs: f           : vector of frequencies
+%        params       : instance of the class utils.loadParameters_new
+%
+% Outputs: spectra    : structure containining the power spectra 
+%                       Possible fields are P0, P1, P2, P3, and PBOLD
+%         normSpectra : structure containining the normalized nominal power spectra (optional)
+%                       Possible fields are P0, P1, P2, P3, and PBOLD
+%
+% Example:
+% >> params = utils.loadParameters_new;
+% >> f = linspace(0.01, 1, 1000);
+% >> [spectra, normSpectra] = calc_spectra(f, params);
+% >> spectra.PBOLD  % gives out the BOLD power spectrum
+%
+% Original: James Pang, QIMR Berghofer Medical Research Institute, 2019
+
+%% main code
 
 w = 2*pi*f;
 
@@ -13,7 +33,7 @@ R = params.C_z*(params.D/params.rho_f)*(Y1*(params.eta + params.tau^(-1)) - ...
     Y2*params.C_z*(params.eta - (params.tau^(-1))*(params.beta - 2)));
 
 constant = 1/(8*pi*params.v_b^2*params.Gamma);
-%
+
 spectra.P0 = P^2*w.^4 + (Q^2 + 2*P*R)*w.^2 + R^2;
 spectra.P1 = constant*(1./w).*(pi/2 - atan((params.k_z^2*params.v_b^2 - w.^2)./(2*params.Gamma*w)));
 spectra.P2 = 1./((-w.^2 + params.kappa^2/4 + params.w_f^2).^2 + params.kappa^2*w.^2);

@@ -7,7 +7,7 @@ classdef loadParameters_new < matlab.mixin.Copyable
 % parameters.
 %
 % Example:
-% >> params = loadParameters;
+% >> params = loadParameters_new;
 % 
 %
 % Some important notes:

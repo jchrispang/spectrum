@@ -1,6 +1,7 @@
 # spectrum_BOLD
 Code and data for the manuscript "Power spectrum of resting-state blood-oxygen-level-dependent signal" by J.C. Pang and P.A. Robinson in Physical Review E (2019).
 
+
 # File descriptions
 
 1. generate_paper_figures.m: Matlab function to generate the figures of the paper
